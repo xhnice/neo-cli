@@ -1,0 +1,66 @@
+{
+    "name": null,
+    "version": "1.0",
+    "scrypt": {
+        "n": 16384,
+        "r": 8,
+        "p": 8
+    },
+    "accounts": [
+        {
+            "address": "AG51SfFAknUuw7Lp2hk4wjEnxWjTeswQjQ",
+            "label": null,
+            "isDefault": false,
+            "lock": false,
+            "key": "6PYQJPWL9ZzndWSzw2amK6PG2B3Ku1WrQ63Y95btc8c7WiWri2ByBodKc1",
+            "contract": {
+                "script": "21035bcbf31e55a29960b702be6c7d0a06de7d62f9ede924ca58cac25afce5b2a09aac",
+                "parameters": [
+                    {
+                        "name": "signature",
+                        "type": "Signature"
+                    }
+                ],
+                "deployed": false
+            },
+            "extra": null
+        },
+        {
+            "address": "Af3ntSFZ5pMaHnVbAayMbfrMX9PWGaZ2wD",
+            "label": null,
+            "isDefault": false,
+            "lock": false,
+            "key": "6PYSMbY9QLpXGeR3fK1c456tU741csatJ6kv4ZsmpVGG9Vo5RiKaVhLbKs",
+            "contract": {
+                "script": "2102682e27634efb69586ec086212563e1059ee23f5b37bf358b494533679cf7bd9aac",
+                "parameters": [
+                    {
+                        "name": "signature",
+                        "type": "Signature"
+                    }
+                ],
+                "deployed": false
+            },
+            "extra": null
+        },
+        {
+            "address": "AYU4nK4XfmjzkTxEKASENBZz7kt9JrmZdW",
+            "label": null,
+            "isDefault": false,
+            "lock": false,
+            "key": "6PYQJPWL9ZzndWSzw2amK6PG2B3Ku1WrQ63Y95btc8c7WiWri2ByBodKc1",
+            "contract": {
+                "script": "5121035bcbf31e55a29960b702be6c7d0a06de7d62f9ede924ca58cac25afce5b2a09a2102883118351f8f47107c83ab634dc7e4ffe29d274e7d3dcf70159c8935ff769beb52ae",
+                "parameters": [
+                    {
+                        "name": "parameter0",
+                        "type": "Signature"
+                    }
+                ],
+                "deployed": false
+            },
+            "extra": null
+        }
+    ],
+    "extra": null
+}

@@ -140,15 +140,22 @@ namespace Neo.Shell
         {
             switch (args[1].ToLower())
             {
-                case "address":
+                case "address": // 创建地址
                     return OnCreateAddressCommand(args);
                 case "wallet":
                     return OnCreateWalletCommand(args);
+                case "wallets": // Add Code 创建无密码的钱包
+                    return OnCreateWalletsCommand(args);
                 default:
                     return base.OnCommand(args);
             }
         }
 
+        /// <summary>
+        /// 创建地址
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
         private bool OnCreateAddressCommand(string[] args)
         {
             if (Program.Wallet == null)
@@ -169,12 +176,15 @@ namespace Neo.Shell
             {
                 WalletAccount account = Program.Wallet.CreateAccount();
                 addresses.Add(account.Address);
+                // 显示进度
                 Console.SetCursorPosition(0, Console.CursorTop);
                 Console.Write($"[{i}/{count}]");
             }
+            // 保存钱包文件
             if (Program.Wallet is NEP6Wallet wallet)
                 wallet.Save();
             Console.WriteLine();
+            // 文件保存到应用程序目录
             string path = "address.txt";
             Console.WriteLine($"export addresses to {path}");
             File.WriteAllLines(path, addresses);
@@ -183,12 +193,21 @@ namespace Neo.Shell
 
         private bool OnCreateWalletCommand(string[] args)
         {
-            if (args.Length < 3)
+            if (args.Length < 2)
             {
                 Console.WriteLine("error");
                 return true;
             }
+
+            //if (args.Length == 2)
+            //{
+            //    Console.WriteLine("功能正在开发中...");
+            //    return true;
+            //}
+
             string path = args[2];
+            //string password = "";
+            // 创建账号去掉密码 2018-04-11 TNT
             string password = ReadPassword("password");
             if (password.Length == 0)
             {
@@ -207,19 +226,21 @@ namespace Neo.Shell
                     {
                         Program.Wallet = UserWallet.Create(path, password);
                         WalletAccount account = Program.Wallet.CreateAccount();
-                        Console.WriteLine($"address: {account.Address}");
-                        Console.WriteLine($" pubkey: {account.GetKey().PublicKey.EncodePoint(true).ToHexString()}");
+                        //Console.WriteLine($"address: {account.Address}");
+                        //Console.WriteLine($" pubkey: {account.GetKey().PublicKey.EncodePoint(true).ToHexString()}");
+                        PrintAccountInfo(account);
                     }
                     break;
                 case ".json":
                     {
                         NEP6Wallet wallet = new NEP6Wallet(path);
-                        wallet.Unlock(password);
+                        wallet.Unlock(password); // 添加锁定密码
                         WalletAccount account = wallet.CreateAccount();
-                        wallet.Save();
+                        wallet.Save(); // 保存到 文件中 
                         Program.Wallet = wallet;
-                        Console.WriteLine($"address: {account.Address}");
-                        Console.WriteLine($" pubkey: {account.GetKey().PublicKey.EncodePoint(true).ToHexString()}");
+                        //Console.WriteLine($"address: {account.Address}");
+                        //Console.WriteLine($" pubkey: {account.GetKey().PublicKey.EncodePoint(true).ToHexString()}");
+                        PrintAccountInfo(account);
                     }
                     break;
                 default:
@@ -227,6 +248,69 @@ namespace Neo.Shell
                     break;
             }
             return true;
+        }
+
+        /// <summary>
+        /// 创建无密码的钱包
+        /// Add Code
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        private bool OnCreateWalletsCommand(string[] args)
+        {
+            if (args.Length < 2)
+            {
+                Console.WriteLine("error");
+                return true;
+            }
+
+            //if (args.Length == 2)
+            //{
+            //    Console.WriteLine("功能正在开发中...");
+            //    return true;
+            //}
+
+            string path = args[2];
+            string password = "";
+
+            switch (Path.GetExtension(path))
+            {
+                case ".db3":
+                    {
+                        Program.Wallet = UserWallet.Create(path, password);
+                        WalletAccount account = Program.Wallet.CreateAccount();
+                        //Console.WriteLine($"address: {account.Address}");
+                        //Console.WriteLine($" pubkey: {account.GetKey().PublicKey.EncodePoint(true).ToHexString()}");
+                        PrintAccountInfo(account);
+                    }
+                    break;
+                case ".json":
+                    {
+                        NEP6Wallet wallet = new NEP6Wallet(path);
+                        wallet.Unlock(password); // 添加锁定密码 
+                        WalletAccount account = wallet.CreateAccount();
+                        wallet.Save(); // 保存到 文件中 
+                        Program.Wallet = wallet;
+                        //Console.WriteLine($"address: {account.Address}");
+                        //Console.WriteLine($" pubkey: {account.GetKey().PublicKey.EncodePoint(true).ToHexString()}");
+                        //Console.WriteLine($"privkey: {account.GetPrivateKey()}");
+                        PrintAccountInfo(account);
+                    }
+                    break;
+                default:
+                    Console.WriteLine("Wallet files in that format are not supported, please use a .json or .db3 file extension.");
+                    break;
+            }
+            return true;
+        }
+
+        private void PrintAccountInfo(WalletAccount account)
+        {
+            //Console.WriteLine($"address: {account.Address}");
+            //Console.WriteLine($" pubkey: {account.GetKey().PublicKey.EncodePoint(true).ToHexString()}");
+            //Console.WriteLine($"privkey: {account.GetPrivateKey()}");
+            //Console.WriteLine($" WIFkey: {account.GetWIFKey()}");
+            account.Print();
         }
 
         private bool OnExportCommand(string[] args)
@@ -514,8 +598,12 @@ namespace Neo.Shell
         {
             switch (args[1].ToLower())
             {
-                case "wallet":
+                case "wallet": // 正常打开钱包
                     return OnOpenWalletCommand(args);
+                case "wallets":// 无密码打开钱包          
+                    return OnOpenWalletsCommand(args);
+                case "walletp":// 公钥打开钱包
+                    return OnOpenWalletpCommand(args);
                 default:
                     return base.OnCommand(args);
             }
@@ -572,6 +660,117 @@ namespace Neo.Shell
             return true;
         }
 
+        /// <summary>
+        /// 无密码打开钱包
+        /// Add Code
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        private bool OnOpenWalletsCommand(string[] args)
+        {
+            if (args.Length < 3)
+            {
+                Console.WriteLine("error");
+                return true;
+            }
+            string path = args[2];
+            if (!File.Exists(path)) // 目录不存在  判断是否是 WIF 私钥
+            {
+                try
+                {
+                    var wifKey = path;
+                    // 判断WIF私钥是否有效
+                    //Console.WriteLine($"Check Wif Key {wifKey}");
+                    Wallet.GetPrivateKeyFromWIF(wifKey);
+                    NEP6Wallet nep6wallet = new NEP6Wallet(wifKey, null, null, null);
+                    Program.Wallet = nep6wallet;
+                    return true;
+                }
+                catch (Exception)
+                {
+                    // 以文件的形式打开钱包
+                    //Console.WriteLine($"wifKey [{path}] not valid");
+                }
+                // nep2key 打开钱包
+                try
+                {
+                    var passphrase = "123456";
+                    if (args.Count() > 3)
+                    {
+                        passphrase = args[3];
+                    }
+                    //Console.WriteLine($"passphrase: {passphrase}");
+                    //if (string.IsNullOrEmpty(passphrase))
+                    //{
+                    //    passphrase = "123456";
+                    //}
+                    var nep2key = path;
+                    //Console.WriteLine($"passphrase: {passphrase}");
+                    //Console.WriteLine($"Check nep2 Key {nep2key}");
+                    Wallet.GetPrivateKeyFromNEP2(nep2key, passphrase);
+                    NEP6Wallet nep6wallet = new NEP6Wallet(null, nep2key, passphrase, null);
+                    Program.Wallet = nep6wallet;
+                    return true;
+                } catch (Exception)
+                {
+                    //Console.WriteLine($"nep2key [{path}] not valid");
+                }
+
+                return true;
+            } 
+           
+           
+            string password = "";
+            if (Path.GetExtension(path) == ".db3")
+            {
+                try
+                {
+                    Program.Wallet = UserWallet.Open(path, password);
+                }
+                catch (CryptographicException)
+                {
+                    Console.WriteLine($"failed to open file \"{path}\"");
+                    return true;
+                }
+            }
+            else
+            {
+                NEP6Wallet nep6wallet = new NEP6Wallet(path);
+                try
+                {
+                    nep6wallet.Unlock(password);
+                }
+                catch (CryptographicException)
+                {
+                    Console.WriteLine($"failed to open file \"{path}\"");
+                    return true;
+                }
+                Program.Wallet = nep6wallet;
+            }
+            return true;
+        }
+
+        /// <summary>
+        ///  公钥打开钱包
+        ///  Add Code
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        private bool OnOpenWalletpCommand(string[] args)
+        {
+            if (args.Length < 3)
+            {
+                Console.WriteLine("error");
+                return true;
+            }
+            string publickey = args[2];
+            Console.WriteLine($"walletp: {publickey}");
+            NEP6Wallet nep6wallet = new NEP6Wallet(publickey,  "",  "");
+            Program.Wallet = nep6wallet;
+            return true;
+        }
+
+
         private bool OnRebuildCommand(string[] args)
         {
             switch (args[1].ToLower())
@@ -619,17 +818,17 @@ namespace Neo.Shell
                 Console.WriteLine("You have to open the wallet first.");
                 return true;
             }
-            string password = ReadPassword("password");
-            if (password.Length == 0)
-            {
-                Console.WriteLine("cancelled");
-                return true;
-            }
-            if (!Program.Wallet.VerifyPassword(password))
-            {
-                Console.WriteLine("Incorrect password");
-                return true;
-            }
+            //string password = ReadPassword("password");
+            //if (password.Length == 0)
+            //{
+            //    Console.WriteLine("cancelled");
+            //    return true;
+            //}
+            //if (!Program.Wallet.VerifyPassword(password))
+            //{
+            //    Console.WriteLine("Incorrect password");
+            //    return true;
+            //}
             UIntBase assetId;
             switch (args[1].ToLower())
             {
@@ -721,6 +920,8 @@ namespace Neo.Shell
                     return OnShowStateCommand(args);
                 case "utxo":
                     return OnShowUtxoCommand(args);
+                case "wallet":
+                    return OnShowWalletCommand(args);
                 default:
                     return base.OnCommand(args);
             }
@@ -792,6 +993,25 @@ namespace Neo.Shell
             if (coins_array.Length > MAX_SHOW)
                 Console.WriteLine($"({coins_array.Length - MAX_SHOW} more)");
             Console.WriteLine($"total: {coins_array.Length} UTXOs");
+            return true;
+        }
+
+        /// <summary>
+        /// 显示当前打开的钱包信息
+        /// </summary>
+        /// <param name="args"></param>
+        private bool OnShowWalletCommand(string[] args)
+        {
+            if (Program.Wallet == null)
+            {
+                Console.WriteLine("You have to open the wallet first.");
+                return true;
+            }
+            var i = 1;
+            foreach (WalletAccount account in Program.Wallet.GetAccounts()) {
+                Console.WriteLine($"Account {i++} Info");
+                PrintAccountInfo(account);
+            }
             return true;
         }
 
@@ -950,6 +1170,23 @@ namespace Neo.Shell
             Directory.CreateDirectory(Settings.Default.Paths.ApplicationLogs);
             string path = Path.Combine(Settings.Default.Paths.ApplicationLogs, $"{e.Transaction.Hash}.json");
             File.WriteAllText(path, json.ToString());
+        }
+
+        /// <summary>
+        /// 初始化钱包
+        /// Add Code
+        /// </summary>
+        protected internal override void InitWallet()
+        {
+            string[] publickeys =  { "0286036b123ada4ee19f08fb068825f203e17d0078472c126cc4317e3fc6f87135",
+                "02726e970bd85975ed07ad2c9f22123ea92e427537d57799f497e26a09949e3515",
+            "0303c8f06b27689280127a60cabcbfb6a62ee7e06fe5c3cf903472c7a5afd8d502",
+            "03ea1e4929619f27398951e2bdf17ca964066a3c3d4339364cf99ed44b4a3c8f30"};
+            NEP6Wallet wallet = new NEP6Wallet();
+            foreach (string publickey in publickeys)
+            {
+                wallet.RegisterLocalWallet(publickey);
+            }
         }
     }
 }

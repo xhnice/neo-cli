@@ -21,6 +21,7 @@ namespace Neo.Network.RPC
         {
             switch (method)
             {
+                case "":
                 case "getapplicationlog":
                     {
                         UInt256 hash = UInt256.Parse(_params[0].AsString());
@@ -29,6 +30,10 @@ namespace Neo.Network.RPC
                             ? JObject.Parse(File.ReadAllText(path))
                             : throw new RpcException(-100, "Unknown transaction");
                     }
+                case "balance": // 使用公钥查询余额 AddCode
+                    NEP6Wallet nep6wallet = new NEP6Wallet();
+
+                    return null;
                 case "getbalance":
                     if (Program.Wallet == null)
                         throw new RpcException(-400, "Access denied.");

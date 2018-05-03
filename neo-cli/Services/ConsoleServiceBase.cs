@@ -17,6 +17,7 @@ namespace Neo.Services
         {
             switch (args[0].ToLower())
             {
+                case "cls":
                 case "clear":
                     Console.Clear();
                     return true;
@@ -34,6 +35,12 @@ namespace Neo.Services
         protected internal abstract void OnStart(string[] args);
 
         protected internal abstract void OnStop();
+
+        /// <summary>
+        /// 初始化钱包
+        /// Add Code
+        /// </summary>
+        protected internal abstract void InitWallet();
 
         public static string ReadPassword(string prompt)
         {
@@ -103,6 +110,7 @@ namespace Neo.Services
         public void Run(string[] args)
         {
             OnStart(args);
+            InitWallet(); // 初始化钱包  AddCode
             RunConsole();
             OnStop();
         }

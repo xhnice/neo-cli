@@ -1,0 +1,31 @@
+{
+    "name": null,
+    "version": "1.0",
+    "scrypt": {
+        "n": 16384,
+        "r": 8,
+        "p": 8
+    },
+    "accounts": [
+        {
+            "address": "AL7AphzpsxHd7N75nVhuCo1U58WHThbMhJ",
+            "label": null,
+            "isDefault": false,
+            "lock": false,
+            "key": "6PYQ9eZhm95zky8wGNUYQcP5QWUEzipipSPTsCDu9maVJsiYvw4fUpTtVN",
+            "contract": {
+                "script": "21030ea465ca5c791e9f9045ae67fc24524fdebeee0b741f71ba9f5be0979d83bd5bac",
+                "parameters": [
+                    {
+                        "name": "signature",
+                        "type": "Signature"
+                    }
+                ],
+                "deployed": false
+            },
+            "extra": null,
+            "pKey": "System.Byte[]"
+        }
+    ],
+    "extra": null
+}

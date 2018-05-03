@@ -1,0 +1,48 @@
+{
+    "name": null,
+    "version": "1.0",
+    "scrypt": {
+        "n": 16384,
+        "r": 8,
+        "p": 8
+    },
+    "accounts": [
+        {
+            "address": "AVaDNTpRELd4C9PwSWM7CDUb4a9PZht3Ww",
+            "label": null,
+            "isDefault": false,
+            "lock": false,
+            "key": "6PYXQK3xtKfQQuYfg7HKTxgd9kwvWxD9uoWDtcT5dvjTgKYVpoVYF34ZWT",
+            "contract": {
+                "script": "21021e402177137c8a24be1e98199b0ad96af6dbd6137c2a6de30def5d66f993d4d3ac",
+                "parameters": [
+                    {
+                        "name": "signature",
+                        "type": "Signature"
+                    }
+                ],
+                "deployed": false
+            },
+            "extra": null
+        },
+        {
+            "address": "AKepTZSp8Ua3o3u8DfrtxSWCpFiC6YCn9T",
+            "label": null,
+            "isDefault": false,
+            "lock": false,
+            "key": "6PYXQK3xtKfQQuYfg7HKTxgd9kwvWxD9uoWDtcT5dvjTgKYVpoVYF34ZWT",
+            "contract": {
+                "script": "5121021e402177137c8a24be1e98199b0ad96af6dbd6137c2a6de30def5d66f993d4d32102883118351f8f47107c83ab634dc7e4ffe29d274e7d3dcf70159c8935ff769beb52ae",
+                "parameters": [
+                    {
+                        "name": "parameter0",
+                        "type": "Signature"
+                    }
+                ],
+                "deployed": false
+            },
+            "extra": null
+        }
+    ],
+    "extra": null
+}
