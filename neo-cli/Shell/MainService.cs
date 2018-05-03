@@ -180,9 +180,11 @@ namespace Neo.Shell
                 Console.SetCursorPosition(0, Console.CursorTop);
                 Console.Write($"[{i}/{count}]");
             }
+            Console.WriteLine("StartSave");
             // 保存钱包文件
             if (Program.Wallet is NEP6Wallet wallet)
                 wallet.Save();
+            Console.WriteLine("EndSave");
             Console.WriteLine();
             // 文件保存到应用程序目录
             string path = "address.txt";
@@ -271,7 +273,7 @@ namespace Neo.Shell
             //}
 
             string path = args[2];
-            string password = "";
+            string password = GetDefaultPassword();
 
             switch (Path.GetExtension(path))
             {
@@ -1178,15 +1180,47 @@ namespace Neo.Shell
         /// </summary>
         protected internal override void InitWallet()
         {
+            #region 测试代码 
+            // 测试钱包索引更新
             string[] publickeys =  { "0286036b123ada4ee19f08fb068825f203e17d0078472c126cc4317e3fc6f87135",
                 "02726e970bd85975ed07ad2c9f22123ea92e427537d57799f497e26a09949e3515",
             "0303c8f06b27689280127a60cabcbfb6a62ee7e06fe5c3cf903472c7a5afd8d502",
             "03ea1e4929619f27398951e2bdf17ca964066a3c3d4339364cf99ed44b4a3c8f30"};
-            NEP6Wallet wallet = new NEP6Wallet();
+            NEP6Wallet wallets = new NEP6Wallet();
             foreach (string publickey in publickeys)
             {
-                wallet.RegisterLocalWallet(publickey);
+                wallets.RegisterLocalWallet(publickey);
             }
+            #endregion
+
+            #region 通过文件加载钱包
+            string path = "wallet/wallet.json"; // 钱包文件
+            if (!File.Exists(path))
+            {
+                FileInfo file = new FileInfo(path);
+                Directory.CreateDirectory(file.DirectoryName);
+                // 创建钱包 保存
+                NEP6Wallet wallet = new NEP6Wallet(path);
+                wallet.Unlock(GetDefaultPassword()); // 添加锁定密码 
+                WalletAccount account = wallet.CreateAccount();
+                wallet.save(); // 保存到 文件中 
+                //Program.Wallet = wallet; // 打开钱包
+                PrintAccountInfo(account);
+
+            }
+            // 重新打开钱包文件   需要把私钥从内存中去除
+            NEP6Wallet nep6wallet = new NEP6Wallet(path, GetDefaultPassword(), 1);
+            Program.Wallet = nep6wallet;
+            #endregion
+        }
+
+        /// <summary>
+        /// 钱包默认密码
+        /// </summary>
+        /// <returns>钱包密码</returns>
+        private string GetDefaultPassword()
+        {
+            return "123456";
         }
     }
 }
