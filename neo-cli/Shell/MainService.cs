@@ -180,11 +180,9 @@ namespace Neo.Shell
                 Console.SetCursorPosition(0, Console.CursorTop);
                 Console.Write($"[{i}/{count}]");
             }
-            Console.WriteLine("StartSave");
             // 保存钱包文件
             if (Program.Wallet is NEP6Wallet wallet)
                 wallet.Save();
-            Console.WriteLine("EndSave");
             Console.WriteLine();
             // 文件保存到应用程序目录
             string path = "address.txt";

@@ -30,10 +30,26 @@ namespace Neo.Network.RPC
                             ? JObject.Parse(File.ReadAllText(path))
                             : throw new RpcException(-100, "Unknown transaction");
                     }
-                case "balance": // 使用公钥查询余额 AddCode
-                    NEP6Wallet nep6wallet = new NEP6Wallet();
-
-                    return null;
+                case "balance": // 使用address查询余额 AddCode
+                    if (Program.Wallet == null)
+                        throw new RpcException(-400, "Access denied.");
+                    else
+                    {
+                        string address = _params[1].AsString();
+                        JObject json = new JObject();
+                        switch (UIntBase.Parse(_params[0].AsString()))
+                        {
+                            case UInt160 asset_id_160: //NEP-5 balance
+                                json["balance"] = Program.Wallet.GetAvailable(asset_id_160, address).ToString();
+                                break;
+                            case UInt256 asset_id_256: //Global Assets balance
+                                IEnumerable<Coin> coins = Program.Wallet.GetCoins(address).Where(p => !p.State.HasFlag(CoinState.Spent) && p.Output.AssetId.Equals(asset_id_256));
+                                json["balance"] = coins.Sum(p => p.Output.Value).ToString();
+                                json["confirmed"] = coins.Where(p => p.State.HasFlag(CoinState.Confirmed)).Sum(p => p.Output.Value).ToString();
+                                break;
+                        }
+                        return json;
+                    }
                 case "getbalance":
                     if (Program.Wallet == null)
                         throw new RpcException(-400, "Access denied.");
@@ -199,6 +215,16 @@ namespace Neo.Network.RPC
                         if (Program.Wallet is NEP6Wallet wallet)
                             wallet.Save();
                         return account.Address;
+                    }
+                case "newaddress":
+                    if (Program.Wallet == null)
+                        throw new RpcException(-400, "Access denied");
+                    else
+                    {
+                        WalletAccount account = Program.Wallet.CreateAccount();
+                        if (Program.Wallet is NEP6Wallet wallet)
+                            wallet.Save();
+                        return account.OutputJson();
                     }
                 case "dumpprivkey":
                     if (Program.Wallet == null)
