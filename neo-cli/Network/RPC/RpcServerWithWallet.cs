@@ -123,6 +123,50 @@ namespace Neo.Network.RPC
                             return context.ToJson();
                         }
                     }
+                case "sendfromto": // 从指定账号向指定账号转账 AddCode
+                    if (Program.Wallet == null)
+                        throw new RpcException(-400, "Access denied");
+                    else
+                    {
+                        UIntBase assetId = UIntBase.Parse(_params[0].AsString());
+                        AssetDescriptor descriptor = new AssetDescriptor(assetId);
+                        UInt160 from = Wallet.ToScriptHash(_params[1].AsString());
+                        UInt160 to = Wallet.ToScriptHash(_params[2].AsString());
+                        BigDecimal value = BigDecimal.Parse(_params[3].AsString(), descriptor.Decimals);
+                        string privatekey = _params[4].AsString();
+                        if (value.Sign <= 0)
+                            throw new RpcException(-32602, "Invalid params");
+                        Fixed8 fee = _params.Count >= 6 ? Fixed8.Parse(_params[5].AsString()) : Fixed8.Zero;
+                        if (fee < Fixed8.Zero)
+                            throw new RpcException(-32602, "Invalid params");
+                        UInt160 change_address = _params.Count >= 7 ? Wallet.ToScriptHash(_params[6].AsString()) : from;// 找零地址 
+                        Transaction tx = Program.Wallet.MakeTransaction(null, new[]
+                        {
+                            new TransferOutput
+                            {
+                                AssetId = assetId,
+                                Value = value,
+                                ScriptHash = to
+                            }
+                        }, from: from, change_address: change_address, fee: fee);
+                        if (tx == null)
+                            throw new RpcException(-300, "Insufficient funds");
+                        ContractParametersContext context = new ContractParametersContext(tx);
+                        //File.AppendAllText("wallet.log", context.ScriptHashes.Count().ToString());
+                        //Program.Wallet.Sign(context);
+                        Program.Wallet.Sign(context, privatekey);
+                        if (context.Completed)
+                        {
+                            tx.Scripts = context.GetScripts();
+                            Program.Wallet.ApplyTransaction(tx);
+                            LocalNode.Relay(tx);
+                            return tx.ToJson();
+                        }
+                        else
+                        {
+                            return context.ToJson();
+                        }
+                    }
                 case "sendtoaddress":
                     if (Program.Wallet == null)
                         throw new RpcException(-400, "Access denied");

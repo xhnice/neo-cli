@@ -1180,15 +1180,15 @@ namespace Neo.Shell
         {
             #region 测试代码 
             // 测试钱包索引更新
-            string[] publickeys =  { "0286036b123ada4ee19f08fb068825f203e17d0078472c126cc4317e3fc6f87135",
-                "02726e970bd85975ed07ad2c9f22123ea92e427537d57799f497e26a09949e3515",
-            "0303c8f06b27689280127a60cabcbfb6a62ee7e06fe5c3cf903472c7a5afd8d502",
-            "03ea1e4929619f27398951e2bdf17ca964066a3c3d4339364cf99ed44b4a3c8f30"};
-            NEP6Wallet wallets = new NEP6Wallet();
-            foreach (string publickey in publickeys)
-            {
-                wallets.RegisterLocalWallet(publickey);
-            }
+            //string[] publickeys =  { "0286036b123ada4ee19f08fb068825f203e17d0078472c126cc4317e3fc6f87135",
+            //    "02726e970bd85975ed07ad2c9f22123ea92e427537d57799f497e26a09949e3515",
+            //"0303c8f06b27689280127a60cabcbfb6a62ee7e06fe5c3cf903472c7a5afd8d502",
+            //"03ea1e4929619f27398951e2bdf17ca964066a3c3d4339364cf99ed44b4a3c8f30"};
+            //NEP6Wallet wallets = new NEP6Wallet();
+            //foreach (string publickey in publickeys)
+            //{
+            //    wallets.RegisterLocalWallet(publickey);
+            //}
             #endregion
 
             #region 通过文件加载钱包
