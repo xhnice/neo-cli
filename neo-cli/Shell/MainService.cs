@@ -674,6 +674,7 @@ namespace Neo.Shell
                 return true;
             }
             string path = args[2];
+            string passphrase = GetDefaultPassword();
             if (!File.Exists(path)) // 目录不存在  判断是否是 WIF 私钥
             {
                 try
@@ -682,7 +683,7 @@ namespace Neo.Shell
                     // 判断WIF私钥是否有效
                     //Console.WriteLine($"Check Wif Key {wifKey}");
                     Wallet.GetPrivateKeyFromWIF(wifKey);
-                    NEP6Wallet nep6wallet = new NEP6Wallet(wifKey, null, null, null);
+                    NEP6Wallet nep6wallet = new NEP6Wallet(wifKey, null, passphrase, null);
                     Program.Wallet = nep6wallet;
                     return true;
                 }
@@ -694,7 +695,6 @@ namespace Neo.Shell
                 // nep2key 打开钱包
                 try
                 {
-                    var passphrase = "123456";
                     if (args.Count() > 3)
                     {
                         passphrase = args[3];
@@ -720,7 +720,7 @@ namespace Neo.Shell
             } 
            
            
-            string password = "";
+            string password = passphrase;
             if (Path.GetExtension(path) == ".db3")
             {
                 try
@@ -1218,7 +1218,7 @@ namespace Neo.Shell
         /// <returns>钱包密码</returns>
         private string GetDefaultPassword()
         {
-            return "123456";
+            return Settings.Default.Passphrase.Passphrase;
         }
     }
 }

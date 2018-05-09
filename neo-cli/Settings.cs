@@ -8,7 +8,8 @@ namespace Neo
         public PathsSettings Paths { get; }
         public P2PSettings P2P { get; }
         public RPCSettings RPC { get; }
-
+        public PassphraseSettings Passphrase { get; }
+        public AssetSettings Asset { get; }
         public static Settings Default { get; }
 
         static Settings()
@@ -22,6 +23,8 @@ namespace Neo
             this.Paths = new PathsSettings(section.GetSection("Paths"));
             this.P2P = new P2PSettings(section.GetSection("P2P"));
             this.RPC = new RPCSettings(section.GetSection("RPC"));
+            this.Passphrase = new PassphraseSettings(section.GetSection("Passphrase"));
+            this.Asset = new AssetSettings(section.GetSection("Asset"));
         }
     }
 
@@ -60,6 +63,39 @@ namespace Neo
             this.Port = ushort.Parse(section.GetSection("Port").Value);
             this.SslCert = section.GetSection("SslCert").Value;
             this.SslCertPassword = section.GetSection("SslCertPassword").Value;
+        }
+    }
+
+    internal class PassphraseSettings
+    {
+        public string Passphrase { get; }
+
+        public PassphraseSettings(IConfigurationSection section)
+        {
+            this.Passphrase = section.GetSection("passphrase").Value;
+            if (string.IsNullOrEmpty(this.Passphrase))
+            {
+                this.Passphrase = "tiger";
+            }
+        }
+    }
+
+    internal class AssetSettings
+    {
+        public string GASAsset { get; }
+        public string NEOAsset { get; }
+        public AssetSettings(IConfigurationSection section)
+        {
+            this.GASAsset = section.GetSection("gasasset").Value;
+            this.NEOAsset = section.GetSection("neoasset").Value;
+            if (string.IsNullOrEmpty(GASAsset))
+            {
+                this.GASAsset = "602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7";
+            }
+            if (string.IsNullOrEmpty(NEOAsset))
+            {
+                this.NEOAsset = "c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b";
+            }
         }
     }
 }

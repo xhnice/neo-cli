@@ -35,20 +35,49 @@ namespace Neo.Network.RPC
                         throw new RpcException(-400, "Access denied.");
                     else
                     {
-                        string address = _params[1].AsString();
                         JObject json = new JObject();
-                        switch (UIntBase.Parse(_params[0].AsString()))
+                        if (_params.Count() == 1)
                         {
-                            case UInt160 asset_id_160: //NEP-5 balance
-                                json["balance"] = Program.Wallet.GetAvailable(asset_id_160, address).ToString();
-                                break;
-                            case UInt256 asset_id_256: //Global Assets balance
-                                IEnumerable<Coin> coins = Program.Wallet.GetCoins(address).Where(p => !p.State.HasFlag(CoinState.Spent) && p.Output.AssetId.Equals(asset_id_256));
-                                json["balance"] = coins.Sum(p => p.Output.Value).ToString();
-                                json["confirmed"] = coins.Where(p => p.State.HasFlag(CoinState.Confirmed)).Sum(p => p.Output.Value).ToString();
-                                break;
+                            // 查询NEO和GAS资产
+                            string address = _params[0].AsString();
+                            try
+                            {
+                                Wallet.ToScriptHash(address);
+                            } catch
+                            {
+                                json["code"] = -1;
+                                json["message"] = "NEO地址错误";
+                                return json;
+                            }
+                            IEnumerable<Coin> coins = Program.Wallet.GetCoins(address);
+                            // NEO
+                            var neoCoins = coins.Where(p => !p.State.HasFlag(CoinState.Spent) && p.Output.AssetId.Equals(UInt256.Parse(Settings.Default.Asset.NEOAsset)));
+                            json["balance"] = neoCoins.Sum(p => p.Output.Value).ToString();
+                            json["confirmed"] = neoCoins.Where(p => p.State.HasFlag(CoinState.Confirmed)).Sum(p => p.Output.Value).ToString();
+                            // GAS
+                            var gasCoins = coins.Where(p => !p.State.HasFlag(CoinState.Spent) && p.Output.AssetId.Equals(UInt256.Parse(Settings.Default.Asset.GASAsset)));
+                            json["gasbalance"] = gasCoins.Sum(p => p.Output.Value).ToString();
+                            json["gasconfirmed"] = gasCoins.Where(p => p.State.HasFlag(CoinState.Confirmed)).Sum(p => p.Output.Value).ToString();
+                            return json;
                         }
-                        return json;
+                        else // 查询指定资产余额
+                        {
+                            string address = _params[1].AsString();
+                            
+                            switch (UIntBase.Parse(_params[0].AsString()))
+                            {
+                                case UInt160 asset_id_160: //NEP-5 balance
+                                    json["balance"] = Program.Wallet.GetAvailable(asset_id_160, address).ToString();
+                                    break;
+                                case UInt256 asset_id_256: //Global Assets balance
+                                    IEnumerable<Coin> coins = Program.Wallet.GetCoins(address).Where(p => !p.State.HasFlag(CoinState.Spent) && p.Output.AssetId.Equals(asset_id_256));
+                                    json["balance"] = coins.Sum(p => p.Output.Value).ToString();
+                                    json["confirmed"] = coins.Where(p => p.State.HasFlag(CoinState.Confirmed)).Sum(p => p.Output.Value).ToString();
+                                    break;
+                            }
+                            return json;
+                        }
+                       
                     }
                 case "getbalance":
                     if (Program.Wallet == null)
@@ -128,6 +157,7 @@ namespace Neo.Network.RPC
                         throw new RpcException(-400, "Access denied");
                     else
                     {
+                        // 参数顺序  资产类型  输出账号  输入账号  输出金额  输出账号私钥  手续费    找零地址
                         UIntBase assetId = UIntBase.Parse(_params[0].AsString());
                         AssetDescriptor descriptor = new AssetDescriptor(assetId);
                         UInt160 from = Wallet.ToScriptHash(_params[1].AsString());
@@ -139,7 +169,7 @@ namespace Neo.Network.RPC
                         Fixed8 fee = _params.Count >= 6 ? Fixed8.Parse(_params[5].AsString()) : Fixed8.Zero;
                         if (fee < Fixed8.Zero)
                             throw new RpcException(-32602, "Invalid params");
-                        UInt160 change_address = _params.Count >= 7 ? Wallet.ToScriptHash(_params[6].AsString()) : from;// 找零地址 
+                        UInt160 change_address = _params.Count >= 7 && !string.IsNullOrEmpty(_params[6].AsString()) ? Wallet.ToScriptHash(_params[6].AsString()) : from;// 找零地址 
                         Transaction tx = Program.Wallet.MakeTransaction(null, new[]
                         {
                             new TransferOutput
@@ -260,7 +290,7 @@ namespace Neo.Network.RPC
                             wallet.Save();
                         return account.Address;
                     }
-                case "newaddress":
+                case "newaddress":// 创建一个账号 AddCode
                     if (Program.Wallet == null)
                         throw new RpcException(-400, "Access denied");
                     else
@@ -279,7 +309,7 @@ namespace Neo.Network.RPC
                         WalletAccount account = Program.Wallet.GetAccount(scriptHash);
                         return account.GetKey().Export();
                     }
-                case "invoke":
+                case "invoke":// 使用给定的参数以散列值调用智能合约
                 case "invokefunction":
                 case "invokescript":
                     JObject result = base.Process(method, _params);
