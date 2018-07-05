@@ -237,7 +237,7 @@ namespace Neo.Network.RPC
                             return context.ToJson();
                         }
                     }
-                case "sendmany":
+                case "sendmany": // 批量转账
                     if (Program.Wallet == null)
                         throw new RpcException(-400, "Access denied");
                     else
